@@ -1,5 +1,5 @@
 //import hook react
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 
 //import hook useHitory from react router dom
 import { useNavigate } from "react-router-dom";
@@ -8,36 +8,35 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 //import component Bootstrap React
-import {
-  Container,
-  Button,
-  Navbar,
-  Nav,
-} from "react-bootstrap";
+import { Container, Button, Navbar, Nav } from "react-bootstrap";
 
 //import react router dom
 import { Link } from "react-router-dom";
 
 // import cookies
 import Cookies from "js-cookie";
+import Loading from "../components/Loading";
 
 function Dashboard() {
   //state user
   const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(false);
 
   //define history
   const navigate = useNavigate();
 
   //get token
-  const token = Cookies.get('token');
+  const token = Cookies.get("token");
 
   //function "fetchData"
   const fetchData = async () => {
+    setLoading(true);
     //set axios header dengan type Authorization + Bearer token
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     //fetch user from Rest API
     await axios.get("http://localhost:8000/api/user").then((response) => {
       //set response user to state
+      setLoading(false);
       setUser(response.data);
     });
   };
@@ -60,19 +59,29 @@ function Dashboard() {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     //fetch Rest API
     await axios.post("http://localhost:8000/api/logout").then(() => {
-       //remove token from cookies
-       Cookies.remove("token");
+      //remove token from cookies
+      Cookies.remove("token");
 
       //redirect halaman login
       navigate("/login");
     });
   };
 
+  if (loading) {
+    return (
+      <div>
+        <Loading />
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <Fragment>
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand to="/" className="text-uppercase">Selamat Datang, <strong>{user.name}</strong>{" "}</Navbar.Brand>
+          <Navbar.Brand to="/" className="text-uppercase">
+            Selamat Datang, <strong>{user.name}</strong>{" "}
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">
@@ -88,7 +97,7 @@ function Dashboard() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-    </div>
+    </Fragment>
   );
 }
 
